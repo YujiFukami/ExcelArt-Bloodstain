@@ -31,7 +31,7 @@ Option Explicit
 'GetXYCellScreenLowerRight       ・・・元場所：FukamiAddins3.ModCursor
 
 '------------------------------
-Const Pi# = 3.141529
+Const Pi As Double = 3.141529
 '------------------------------
 'シート関数用近似、補間関数
 '------------------------------
@@ -45,18 +45,13 @@ Const Pi# = 3.141529
 '------------------------------
 '※※※※※※※※※※※※※※※※※※※※※※※※※※※
 'カーソルのスクリーン座標取得用
-#If VBA7 Then
 Private Declare PtrSafe Function GetCursorPos Lib "user32" (IpPoint As PointAPI) As Long
-#Else
-Private Declare Function GetCursorPos Lib "user32" (IpPoint As PointAPI) As Long
-#End If
 
 Private Type PointAPI
     X As Long
     Y As Long
 End Type
 '------------------------------
-
 
 Sub Bloodstain(TargetSheet As Worksheet)
 'カーソル位置に血が飛ぶ
@@ -66,7 +61,8 @@ Sub Bloodstain(TargetSheet As Worksheet)
 'TargetSheet・・・地を飛ばす対象のシート/Worksheet型
 
     'カーソル位置のドキュメント座標取得
-    Dim CenterX#, CenterY#
+    Dim CenterX As Double
+    Dim CenterY As Double
     Dim Dummy
     On Error Resume Next 'スクリーン座標取得に失敗した場合
     Dummy = GetXYDocumentFromCursor
@@ -77,19 +73,25 @@ Sub Bloodstain(TargetSheet As Worksheet)
         Exit Sub
     End If
     
-    Dim N&, I&
-    Dim k_fai1#, k_fai2#, k_fai3#, r0#, kr#, p#
+    Dim N      As Long
+    Dim I      As Long
+    Dim k_fai1 As Double
+    Dim k_fai2 As Double
+    Dim k_fai3 As Double
+    Dim r0     As Double
+    Dim kr     As Double
+    Dim p      As Double
     
-    N = 10 + Rnd() * 6 '血痕のツノの個数
-    k_fai1 = 0.4 '血痕のツノの根っこの座標の角度の係数
-    k_fai2 = 0.11 '血痕のツノのくびれの座標の角度の係数
-    k_fai3 = 0.2 '血痕のツノの膨らみの座標の角度の係数
+    N = 10 + Rnd() * 6      '血痕のツノの個数
+    k_fai1 = 0.4            '血痕のツノの根っこの座標の角度の係数
+    k_fai2 = 0.11           '血痕のツノのくびれの座標の角度の係数
+    k_fai3 = 0.2            '血痕のツノの膨らみの座標の角度の係数
     r0 = 4 / 20 * N * 1.2   '血痕の核半径
-    kr = 0.9 + 0.2 * Rnd() 'ツノの長さ係数。大きいほどツノが長くなる
-    p = 0.3 '調整係数(隣通しのツノとの間隔のランダム調整)(大きいほど間隔が大きく変わる)
+    kr = 0.9 + 0.2 * Rnd()  'ツノの長さ係数。大きいほどツノが長くなる
+    p = 0.3                 '調整係数(隣通しのツノとの間隔のランダム調整)(大きいほど間隔が大きく変わる)
     
     '色リスト
-    Dim ColorList&(1 To 6)
+    Dim ColorList(1 To 6) As Long
     ColorList(1) = RGB(0, 0, 255) '青
     ColorList(2) = RGB(231, 34, 231) '紫
     ColorList(3) = RGB(255, 124, 0) 'オレンジ
@@ -97,7 +99,8 @@ Sub Bloodstain(TargetSheet As Worksheet)
     ColorList(5) = RGB(158, 255, 69) '黄緑
     ColorList(6) = RGB(255, 0, 148) '紫2
     
-    Dim ColorNum&, InputColor&
+    Dim ColorNum   As Long
+    Dim InputColor As Long
     ColorNum = WorksheetFunction.RandBetween(1, 6)
     InputColor = ColorList(ColorNum)
     
@@ -105,7 +108,7 @@ Sub Bloodstain(TargetSheet As Worksheet)
 
 End Sub
 
-Private Sub 血痕の計算(N&, k_fai1#, k_fai2#, k_fai3#, r0#, kr#, p#, CenterX#, CenterY#, TargetSheet As Worksheet, Optional InputColor& = rgbRed)
+Private Sub 血痕の計算(N As Long, k_fai1 As Double, k_fai2 As Double, k_fai3 As Double, r0 As Double, kr As Double, p As Double, CenterX As Double, CenterY As Double, TargetSheet As Worksheet, Optional InputColor As Long = rgbRed)
 '血痕の形状を計算して、指定位置に描画
 '20211009
 
@@ -121,10 +124,11 @@ Private Sub 血痕の計算(N&, k_fai1#, k_fai2#, k_fai3#, r0#, kr#, p#, CenterX#, Ce
 'TargetSheet・・・血を飛ばす対象のシート
 'InputColor ・・・塗りつぶし色。デフォルトは赤
 
-    Dim I&
+    Dim I As Long
     
-    Dim ThetaList#(), ThetaDashList#()
-    Dim dTheta#
+    Dim ThetaList()     As Double
+    Dim ThetaDashList() As Double
+    Dim dTheta          As Double
     ReDim ThetaList(1 To N)
     ReDim ThetaDashList(1 To N)
     
@@ -134,8 +138,12 @@ Private Sub 血痕の計算(N&, k_fai1#, k_fai2#, k_fai3#, r0#, kr#, p#, CenterX#, Ce
         ThetaDashList(I) = ThetaList(I) + dTheta 'θ'i
     Next I
     
-    Dim Fai1#, Fai2#, Fai3#, FaiList#(), rList#()
-    Dim dr#
+    Dim Fai1      As Double
+    Dim Fai2      As Double
+    Dim Fai3      As Double
+    Dim FaiList() As Double
+    Dim rList()   As Double
+    Dim dr        As Double
     Fai1 = k_fai1 * Pi / N 'φ1
     Fai2 = k_fai2 * Pi / N 'φ1
     Fai3 = k_fai3 * Pi / N 'φ1
@@ -155,9 +163,10 @@ Private Sub 血痕の計算(N&, k_fai1#, k_fai2#, k_fai3#, r0#, kr#, p#, CenterX#, Ce
     Next I
     
     Dim XYList
+    Dim TmpIti   As Long
+    Dim TmpTheta As Double
+    Dim Tmpr     As Double
     ReDim XYList(1 To 7 * N + 1, 1 To 2)
-    Dim TmpIti&
-    Dim TmpTheta#, Tmpr#
     For I = 1 To N
         TmpIti = (I - 1) * 7 + 1
         
@@ -202,7 +211,7 @@ Private Sub 血痕の計算(N&, k_fai1#, k_fai2#, k_fai3#, r0#, kr#, p#, CenterX#, Ce
     XYList(UBound(XYList, 1), 2) = XYList(1, 2)
     
     'スプライン補間で点を増やす
-    Dim BunkatuN&
+    Dim BunkatuN As Long
     BunkatuN = 1000
     XYList = SplineXYParaFast(XYList, BunkatuN, 4)
     
@@ -214,10 +223,7 @@ Private Sub 血痕の計算(N&, k_fai1#, k_fai2#, k_fai3#, r0#, kr#, p#, CenterX#, Ce
     
     '出力
     Dim TmpShape As Shape
-'    Application.ScreenUpdating = False
     Set TmpShape = DrawPolyLine(XYList, TargetSheet)
-'    Set TmpShape = 曲線を作図する(XYList, CenterX, CenterY, 10)
-'    Application.ScreenUpdating = True
     With TmpShape
         .Fill.ForeColor.RGB = InputColor
         .Line.ForeColor.RGB = InputColor
@@ -225,7 +231,7 @@ Private Sub 血痕の計算(N&, k_fai1#, k_fai2#, k_fai3#, r0#, kr#, p#, CenterX#, Ce
         
 End Sub
 
-Private Function SplineXYParaFast(ByVal ArrayXY2D, BunkatuN&, PointCount&)
+Private Function SplineXYParaFast(ByVal ArrayXY2D, BunkatuN As Long, PointCount As Long)
 'パラメトリック関数形式でスプライン補間を行う
 '分割して計算を高速化する
 'ArrayX,ArrayYがどちらも単調増加、単調減少でない場合に用いる。
@@ -247,14 +253,16 @@ Private Function SplineXYParaFast(ByVal ArrayXY2D, BunkatuN&, PointCount&)
     End If
         
     '行列の開始要素を1に変更（計算しやすいから）
-    Dim StartNum%
+    Dim StartNum As Integer
     StartNum = LBound(ArrayXY2D) '入力配列の要素の開始番号を取っておく（出力値に合わせるため）
     If LBound(ArrayXY2D, 1) <> 1 Or LBound(ArrayXY2D, 2) <> 1 Then
         ArrayXY2D = Application.Transpose(Application.Transpose(ArrayXY2D))
     End If
     
-    Dim ArrayX1D, ArrayY1D
-    Dim I%, N%
+    Dim ArrayX1D
+    Dim ArrayY1D
+    Dim I       As Integer
+    Dim N       As Integer
     N = UBound(ArrayXY2D, 1)
     ReDim ArrayX1D(StartNum To StartNum - 1 + N)
     ReDim ArrayY1D(StartNum To StartNum - 1 + N)
@@ -266,7 +274,8 @@ Private Function SplineXYParaFast(ByVal ArrayXY2D, BunkatuN&, PointCount&)
     
     '計算処理※※※※※※※※※※※※※※※※※※※※※※※※※※※
     Dim Dummy
-    Dim OutputArrayX1D, OutputArrayY1D
+    Dim OutputArrayX1D
+    Dim OutputArrayY1D
     Dummy = SplineParaFast(ArrayX1D, ArrayY1D, BunkatuN, PointCount)
     OutputArrayX1D = Dummy(1)
     OutputArrayY1D = Dummy(2)
@@ -284,7 +293,7 @@ Private Function SplineXYParaFast(ByVal ArrayXY2D, BunkatuN&, PointCount&)
     
 End Function
 
-Private Function SplineParaFast(ByVal ArrayX1D, ByVal ArrayY1D, BunkatuN&, PointCount&)
+Private Function SplineParaFast(ByVal ArrayX1D, ByVal ArrayY1D, BunkatuN As Long, PointCount As Long)
 'パラメトリック関数形式でスプライン補間を行う
 '分割して計算を高速化する
 'ArrayX1D,ArrayY1Dがどちらも単調増加、単調減少でない場合に用いる。
@@ -308,7 +317,7 @@ Private Function SplineParaFast(ByVal ArrayX1D, ByVal ArrayY1D, BunkatuN&, Point
         ArrayY1D = Application.Transpose(ArrayY1D.Value)
     End If
     
-    Dim StartNum%
+    Dim StartNum As Integer
     '行列の開始要素を1に変更（計算しやすいから）
     StartNum = LBound(ArrayX1D, 1) '入力配列の要素の開始番号を取っておく（出力値に合わせるため）
     If LBound(ArrayX1D, 1) <> 1 Then
@@ -319,7 +328,8 @@ Private Function SplineParaFast(ByVal ArrayX1D, ByVal ArrayY1D, BunkatuN&, Point
     End If
     
     '配列の次元チェック
-    Dim JigenCheck1%, JigenCheck2%
+    Dim JigenCheck1 As Integer
+    Dim JigenCheck2 As Integer
     On Error Resume Next
     JigenCheck1 = UBound(ArrayX1D, 2) '配列の次元が1ならエラーとなる
     JigenCheck2 = UBound(ArrayY1D, 2) '配列の次元が1ならエラーとなる
@@ -334,9 +344,11 @@ Private Function SplineParaFast(ByVal ArrayX1D, ByVal ArrayY1D, BunkatuN&, Point
     End If
     
     '計算処理※※※※※※※※※※※※※※※※※※※※※※※※※※※
-    Dim I%, J%, K%, M%, N% '数え上げ用(Integer型)
+    Dim I              As Integer
+    Dim N              As Integer
+    Dim ArrayT1D()     As Double
+    Dim ArrayParaT1D() As Double
     N = UBound(ArrayX1D, 1)
-    Dim ArrayT1D#(), ArrayParaT1D#()
     
     'X,Yの補間の基準となる配列を作成
     ReDim ArrayT1D(1 To N)
@@ -373,7 +385,7 @@ Private Function SplineParaFast(ByVal ArrayX1D, ByVal ArrayY1D, BunkatuN&, Point
     
 End Function
 
-Private Function SplineByArrayX1DFast(ByVal ArrayX1D, ByVal ArrayY1D, ByVal InputArrayX1D, PointCount&)
+Private Function SplineByArrayX1DFast(ByVal ArrayX1D, ByVal ArrayY1D, ByVal InputArrayX1D, PointCount As Long)
  'スプライン補間計算を行う
  '分割して計算することで高速化する
 
@@ -401,7 +413,7 @@ Private Function SplineByArrayX1DFast(ByVal ArrayX1D, ByVal ArrayY1D, ByVal Inpu
         InputArrayX1D = Application.Transpose(InputArrayX1D.Value)
     End If
     
-    Dim StartNum%
+    Dim StartNum As Integer
     '行列の開始要素を1に変更（計算しやすいから）
     If LBound(ArrayX1D, 1) <> 1 Then
         ArrayX1D = Application.Transpose(Application.Transpose(ArrayX1D))
@@ -415,7 +427,9 @@ Private Function SplineByArrayX1DFast(ByVal ArrayX1D, ByVal ArrayY1D, ByVal Inpu
     End If
     
     '配列の次元チェック
-    Dim JigenCheck1%, JigenCheck2%, JigenCheck3%
+    Dim JigenCheck1 As Integer
+    Dim JigenCheck2 As Integer
+    Dim JigenCheck3 As Integer
     On Error Resume Next
     JigenCheck1 = UBound(ArrayX1D, 2) '配列の次元が1ならエラーとなる
     JigenCheck2 = UBound(ArrayY1D, 2) '配列の次元が1ならエラーとなる
@@ -437,10 +451,18 @@ Private Function SplineByArrayX1DFast(ByVal ArrayX1D, ByVal ArrayY1D, ByVal Inpu
     Dim SplitArrayList
     SplitArrayList = スプライン補間高速化用に分割処理(ArrayX1D, ArrayY1D, InputArrayX1D, PointCount)
         
-    Dim TmpXList, TmpYList, TmpPointList
-    Dim Output '出力値格納変数
+    Dim TmpXList
+    Dim TmpYList
+    Dim TmpPointList
+    Dim Output
     Dim TmpSplineList
-    Dim I&, J&, II&, JJ&, N&, M&, K&
+    Dim I  As Long
+    Dim J  As Long
+    Dim II As Long
+    Dim JJ As Long
+    Dim N  As Long
+    Dim M  As Long
+    Dim K  As Long
     N = UBound(SplitArrayList, 1)
     K = 0
     For I = 1 To N
@@ -462,7 +484,7 @@ Private Function SplineByArrayX1DFast(ByVal ArrayX1D, ByVal ArrayY1D, ByVal Inpu
     
 End Function
 
-Private Function スプライン補間高速化用に分割処理(ByVal ArrayX1D, ByVal ArrayY1D, ByVal CalPoint1D, PointCount&)
+Private Function スプライン補間高速化用に分割処理(ByVal ArrayX1D, ByVal ArrayY1D, ByVal CalPoint1D, PointCount As Long)
 'スプライン補間高速化用に分割処理
 '20211009
 
@@ -472,18 +494,25 @@ Private Function スプライン補間高速化用に分割処理(ByVal ArrayX1D, ByVal ArrayY1D
 'CalPoint1D・・・補間位置のX座標リスト
 'PointCount・・・分割後の一つの分割の点数
 
-    Dim I&, J&, II&, JJ&, N&, M&, K&
+    Dim I      As Long
+    Dim N      As Long
+    Dim K      As Long
+    Dim PointN As Long
     N = UBound(ArrayX1D, 1)
-    Dim PointN&
     PointN = UBound(CalPoint1D, 1)
     
     Dim Output '出力値格納変数
     ReDim Output(1 To N, 1 To 3) '1:補間元X座標リスト,2:補間元Y座標リスト,3:補間位置X座標リスト
     'Nはとりあえずの最大で、後で配列を縮小する
     
-    Dim TmpXList, TmpYList, TmpPointList, TmpInterXList
-    Dim StartNum&, EndNum& '分割する補間元座標の開始位置と終了位置
-    Dim InterStartNum&, InterEndNum& '分割された補間元座標で実際の補間範囲の開始位置と終了位置
+    Dim TmpXList
+    Dim TmpYList
+    Dim TmpPointList
+    Dim TmpInterXList
+    Dim StartNum      As Long
+    Dim EndNum        As Long '分割する補間元座標の開始位置と終了位置
+    Dim InterStartNum As Long
+    Dim InterEndNum   As Long '分割された補間元座標で実際の補間範囲の開始位置と終了位置
     
     K = 0
     Do
@@ -523,7 +552,8 @@ Private Function スプライン補間高速化用に分割処理(ByVal ArrayX1D, ByVal ArrayY1D
     
     '分割した補間位置で重複するものを消去
     N = UBound(Output, 1)
-    Dim TmpList1, TmpList2
+    Dim TmpList1
+    Dim TmpList2
     For I = 2 To N
         TmpList1 = Output(I - 1, 3)
         TmpList2 = Output(I, 3)
@@ -563,16 +593,18 @@ Private Function ExtractByRangeArray1D(InputArray1D, RangeArray1D)
     Call CheckArray1D(RangeArray1D, "RangeArray1D")
     Call CheckArray1DStart1(RangeArray1D, "RangeArray1D")
     
-    Dim I&, J&, II&, JJ&, N&, M&, K&
+    Dim I As Long, J As Long, II As Long, JJ As Long, N As Long, M As Long, K As Long
     
     
     '指定範囲の最小、最大を取得
-    Dim MinNum#, MaxNum#
+    Dim MinNum As Double
+    Dim MaxNum As Double
     MinNum = WorksheetFunction.Min(RangeArray1D)
     MaxNum = WorksheetFunction.Max(RangeArray1D)
     
     '抽出範囲の開始位置、終了位置を計算
-    Dim StartNum&, EndNum&
+    Dim StartNum As Long
+    Dim EndNum   As Long
     StartNum = 0
     EndNum = 0
     N = UBound(InputArray1D, 1)
@@ -609,11 +641,11 @@ Private Function ExtractByRangeArray1D(InputArray1D, RangeArray1D)
     
 End Function
 
-Private Sub CheckArray1D(InputArray, Optional HairetuName$ = "配列")
+Private Sub CheckArray1D(InputArray, Optional HairetuName As String = "配列")
 '入力配列が1次元配列かどうかチェックする
 '20210804
 
-    Dim Dummy%
+    Dim Dummy As Integer
     On Error Resume Next
     Dummy = UBound(InputArray, 2)
     On Error GoTo 0
@@ -625,7 +657,7 @@ Private Sub CheckArray1D(InputArray, Optional HairetuName$ = "配列")
 
 End Sub
 
-Private Sub CheckArray1DStart1(InputArray, Optional HairetuName$ = "配列")
+Private Sub CheckArray1DStart1(InputArray, Optional HairetuName As String = "配列")
 '入力1次元配列の開始番号が1かどうかチェックする
 '20210804
 
@@ -637,7 +669,7 @@ Private Sub CheckArray1DStart1(InputArray, Optional HairetuName$ = "配列")
 
 End Sub
 
-Private Function ExtractArray1D(Array1D, StartNum&, EndNum&)
+Private Function ExtractArray1D(Array1D, StartNum As Long, EndNum As Long)
 '一次元配列の指定範囲を配列として抽出する
 '20211009
 
@@ -650,7 +682,8 @@ Private Function ExtractArray1D(Array1D, StartNum&, EndNum&)
     Call CheckArray1D(Array1D, "Array1D")
     Call CheckArray1DStart1(Array1D, "Array1D")
     
-    Dim I&, J&, K&, M&, N& '数え上げ用(Long型)
+    Dim I As Long
+    Dim N As Long
     N = UBound(Array1D, 1) '要素数
     
     If StartNum > EndNum Then
@@ -680,7 +713,7 @@ Private Function ExtractArray1D(Array1D, StartNum&, EndNum&)
     
 End Function
 
-Private Function ExtractArray(Array2D, StartRow&, StartCol&, EndRow&, EndCol&)
+Private Function ExtractArray(Array2D, StartRow As Long, StartCol As Long, EndRow As Long, EndCol As Long)
 '二次元配列の指定範囲を配列として抽出する
 '20210917
 
@@ -695,7 +728,10 @@ Private Function ExtractArray(Array2D, StartRow&, StartCol&, EndRow&, EndCol&)
     Call CheckArray2D(Array2D, "Array2D")
     Call CheckArray2DStart1(Array2D, "Array2D")
     
-    Dim I&, J&, K&, M&, N& '数え上げ用(Long型)
+    Dim I As Long
+    Dim J As Long
+    Dim M As Long
+    Dim N As Long
     N = UBound(Array2D, 1) '行数
     M = UBound(Array2D, 2) '列数
     
@@ -740,11 +776,12 @@ Private Function ExtractArray(Array2D, StartRow&, StartCol&, EndRow&, EndCol&)
     
 End Function
 
-Private Sub CheckArray2D(InputArray, Optional HairetuName$ = "配列")
+Private Sub CheckArray2D(InputArray, Optional HairetuName As String = "配列")
 '入力配列が2次元配列かどうかチェックする
 '20210804
 
-    Dim Dummy2%, Dummy3%
+    Dim Dummy2 As Integer
+    Dim Dummy3 As Integer
     On Error Resume Next
     Dummy2 = UBound(InputArray, 2)
     Dummy3 = UBound(InputArray, 3)
@@ -757,7 +794,7 @@ Private Sub CheckArray2D(InputArray, Optional HairetuName$ = "配列")
 
 End Sub
 
-Private Sub CheckArray2DStart1(InputArray, Optional HairetuName$ = "配列")
+Private Sub CheckArray2DStart1(InputArray, Optional HairetuName As String = "配列")
 '入力2次元配列の開始番号が1かどうかチェックする
 '20210804
 
@@ -794,7 +831,7 @@ Private Function SplineByArrayX1D(ByVal ArrayX1D, ByVal ArrayY1D, ByVal InputArr
         InputArrayX1D = Application.Transpose(InputArrayX1D.Value)
     End If
     
-    Dim StartNum%
+    Dim StartNum As Integer
     '行列の開始要素を1に変更（計算しやすいから）
     If LBound(ArrayX1D, 1) <> 1 Then
         ArrayX1D = Application.Transpose(Application.Transpose(ArrayX1D))
@@ -808,7 +845,9 @@ Private Function SplineByArrayX1D(ByVal ArrayX1D, ByVal ArrayY1D, ByVal InputArr
     End If
     
     '配列の次元チェック
-    Dim JigenCheck1%, JigenCheck2%, JigenCheck3%
+    Dim JigenCheck1 As Integer
+    Dim JigenCheck2 As Integer
+    Dim JigenCheck3 As Integer
     On Error Resume Next
     JigenCheck1 = UBound(ArrayX1D, 2) '配列の次元が1ならエラーとなる
     JigenCheck2 = UBound(ArrayY1D, 2) '配列の次元が1ならエラーとなる
@@ -827,8 +866,15 @@ Private Function SplineByArrayX1D(ByVal ArrayX1D, ByVal ArrayY1D, ByVal InputArr
     End If
 
     '計算処理※※※※※※※※※※※※※※※※※※※※※※※※※※※
-    Dim A, B, C, D
-    Dim I&, J&, K&, M&, N& '数え上げ用(Long型)
+    Dim A
+    Dim B
+    Dim C
+    Dim D
+    Dim I As Long
+    Dim J As Long
+    Dim K As Long
+    Dim M As Long
+    Dim N As Long
     
     'スプライン計算用の各係数を計算する。参照渡しでA,B,C,Dに格納
     Dim Dummy
@@ -841,11 +887,12 @@ Private Function SplineByArrayX1D(ByVal ArrayX1D, ByVal ArrayY1D, ByVal InputArr
     Dim SotoNaraTrue As Boolean
     N = UBound(ArrayX1D, 1) '補間対象の要素数
     
-    Dim OutputArrayY1D#() '出力するYの格納
-    Dim NX%
+    Dim OutputArrayY1D() As Double '出力するYの格納
+    Dim NX               As Integer
+    Dim TmpX             As Double
+    Dim TmpY             As Double
     NX = UBound(InputArrayX1D, 1) '補間位置の個数
     ReDim OutputArrayY1D(1 To NX)
-    Dim TmpX#, TmpY#
     
     For J = 1 To NX
         TmpX = InputArrayX1D(J)
@@ -927,17 +974,21 @@ End Function
 Private Function SplineKeisu(ByVal ArrayX1D, ByVal ArrayY1D)
 
     '参考：http://www5d.biglobe.ne.jp/stssk/maze/spline.html
-    Dim I%, J%, K%, M%, N% '数え上げ用(Integer型)
-    Dim A, B, C, D
+    Dim I As Integer
+    Dim N As Integer
+    Dim A
+    Dim B
+    Dim C
+    Dim D
     N = UBound(ArrayX1D, 1)
     ReDim A(1 To N)
     ReDim B(1 To N)
     ReDim D(1 To N)
     
-    Dim h#()
-    Dim ArrayL2D#() '左辺の配列 要素数(1 to N,1 to N)
-    Dim ArrayR1D#() '右辺の配列 要素数(1 to N,1 to 1)
-    Dim ArrayLm2D#() '左辺の配列の逆行列 要素数(1 to N,1 to N)
+    Dim h()         As Double
+    Dim ArrayL2D()  As Double '左辺の配列 要素数(1 to N,1 to N)
+    Dim ArrayR1D()  As Double '右辺の配列 要素数(1 to N,1 to 1)
+    Dim ArrayLm2D() As Double '左辺の配列の逆行列 要素数(1 to N,1 to N)
     
     ReDim h(1 To N - 1)
     ReDim ArrayL2D(1 To N, 1 To N)
@@ -1012,7 +1063,8 @@ Private Function F_MMult(ByVal Matrix1, ByVal Matrix2)
     
     '入力値のチェックと修正※※※※※※※※※※※※※※※※※※※※※※※※※※※
     '配列の次元チェック
-    Dim JigenCheck1%, JigenCheck2%
+    Dim JigenCheck1 As Integer
+    Dim JigenCheck2 As Integer
     On Error Resume Next
     JigenCheck1 = UBound(Matrix1, 2) '配列の次元が1ならエラーとなる
     JigenCheck2 = UBound(Matrix2, 2) '配列の次元が1ならエラーとなる
@@ -1043,17 +1095,21 @@ Private Function F_MMult(ByVal Matrix1, ByVal Matrix2)
     End If
     
     '計算処理※※※※※※※※※※※※※※※※※※※※※※※※※※※
-    Dim I%, J%, K%, M%, N% '数え上げ用(Integer型)
-    Dim M2%
-    Dim Output#() '出力する配列
+    Dim I        As Integer
+    Dim J        As Integer
+    Dim K        As Integer
+    Dim M        As Integer
+    Dim N        As Integer
+    Dim M2       As Integer
+    Dim Output() As Double '出力する配列
     N = UBound(Matrix1, 1) '配列1の行数
     M = UBound(Matrix1, 2) '配列1の列数
     M2 = UBound(Matrix2, 2) '配列2の列数
     
     ReDim Output(1 To N, 1 To M2)
     
-    For I = 1 To N '各行
-        For J = 1 To M2 '各列
+    For I = 1 To N         '各行
+        For J = 1 To M2    '各列
             For K = 1 To M '(配列1のI行)と(配列2のJ列)を掛け合わせる
                 Output(I, J) = Output(I, J) + Matrix1(I, K) * Matrix2(K, J)
             Next K
@@ -1081,17 +1137,18 @@ Private Function F_Minverse(ByVal Matrix)
     Call 正方行列かチェック(Matrix)
     
     '計算処理※※※※※※※※※※※※※※※※※※※※※※※※※※※
-    Dim I%, J%, K%, M%, M2%, N% '数え上げ用(Integer型)
+    Dim I        As Integer
+    Dim J        As Integer
+    Dim N        As Integer
+    Dim Output() As Double
     N = UBound(Matrix, 1)
-    Dim Output#()
     ReDim Output(1 To N, 1 To N)
     
-    Dim detM# '行列式の値を格納
+    Dim detM As Double       '行列式の値を格納
+    Dim Mjyokyo              '指定の列・行を除去した配列を格納
     detM = F_MDeterm(Matrix) '行列式を求める
     
-    Dim Mjyokyo '指定の列・行を除去した配列を格納
-    
-    For I = 1 To N '各列
+    For I = 1 To N     '各列
         For J = 1 To N '各行
             
             'I列,J行を除去する
@@ -1137,13 +1194,16 @@ Private Function F_MDeterm(Matrix)
     Call 正方行列かチェック(Matrix)
     
     '計算処理※※※※※※※※※※※※※※※※※※※※※※※※※※※
-    Dim I%, J%, K%, M%, N% '数え上げ用(Integer型)
+    Dim I As Integer
+    Dim J As Integer
+    Dim K As Integer
+    Dim N As Integer
     N = UBound(Matrix, 1)
     
     Dim Matrix2 '掃き出しを行う行列
     Matrix2 = Matrix
     
-    For I = 1 To N '各列
+    For I = 1 To N     '各列
         For J = I To N '掃き出し元の行の探索
             If Matrix2(J, I) <> 0 Then
                 K = J '掃き出し元の行
@@ -1168,7 +1228,7 @@ Private Function F_MDeterm(Matrix)
     
     
     '行列式の計算
-    Dim Output#
+    Dim Output As Double
     Output = 1
     
     For I = 1 To N '各(I列,I行)を掛け合わせていく
@@ -1180,13 +1240,14 @@ Private Function F_MDeterm(Matrix)
     
 End Function
 
-Private Function F_Mgyoirekae(Matrix, Row1%, Row2%)
+Private Function F_Mgyoirekae(Matrix, Row1 As Integer, Row2 As Integer)
     '20210603改良
     'F_Mgyoirekae(Matrix, Row1, Row2)
     'F_Mgyoirekae(配列,指定行番号①,指定行番号②)
     '行列Matrixの①行と②行を入れ替える
     
-    Dim I%, J%, K%, M%, N% '数え上げ用(Integer型)
+    Dim I     As Integer
+    Dim M     As Integer
     Dim Output
     
     Output = Matrix
@@ -1200,21 +1261,23 @@ Private Function F_Mgyoirekae(Matrix, Row1%, Row2%)
     F_Mgyoirekae = Output
 End Function
 
-Private Function F_Mgyohakidasi(Matrix, Row%, Col%)
+Private Function F_Mgyohakidasi(Matrix, Row As Integer, Col As Integer)
     '20210603改良
     'F_Mgyohakidasi(Matrix, Row, Col)
     'F_Mgyohakidasi(配列,指定行,指定列)
     '行列MatrixのRow行､Col列の値で各行を掃き出す
     
-    Dim I%, J%, K%, M%, N% '数え上げ用(Integer型)
+    Dim I     As Integer
+    Dim J     As Integer
+    Dim N     As Integer
     Dim Output
     
     Output = Matrix
     N = UBound(Output, 1) '行数取得
     
-    Dim Hakidasi '掃き出し元の行
-    Dim X# '掃き出し元の値
-    Dim Y#
+    Dim Hakidasi    '掃き出し元の行
+    Dim X As Double '掃き出し元の値
+    Dim Y As Double
     ReDim Hakidasi(1 To N)
     X = Matrix(Row, Col)
     
@@ -1244,20 +1307,24 @@ Private Function F_Mgyohakidasi(Matrix, Row%, Col%)
     
 End Function
 
-Private Function F_Mjyokyo(Matrix, Row%, Col%)
+Private Function F_Mjyokyo(Matrix, Row As Integer, Col As Integer)
     '20210603改良
     'F_Mjyokyo(Matrix, Row, Col)
     'F_Mjyokyo(配列,指定行,指定列)
     '行列MatrixのRow行、Col列を除去した行列を返す
     
-    Dim I%, J%, K%, M%, N% '数え上げ用(Integer型)
+    Dim I As Integer
+    Dim J As Integer
+    Dim M As Integer
+    Dim N As Integer
     Dim Output '指定した行・列を除去後の配列
     
     N = UBound(Matrix, 1) '行数取得
     M = UBound(Matrix, 2) '列数取得
     ReDim Output(1 To N - 1, 1 To M - 1)
     
-    Dim I2%, J2%
+    Dim I2 As Integer
+    Dim J2 As Integer
     
     I2 = 0 '行方向数え上げ初期化
     For I = 1 To N
@@ -1297,8 +1364,10 @@ Private Function UnionArray1D(UpperArray1D, LowerArray1D)
     Call CheckArray1DStart1(LowerArray1D, "LowerArray1D")
     
     '処理
-    Dim I&, J&, K&, M&, N& '数え上げ用(Long型)
-    Dim N1&, N2&
+    Dim I  As Long
+    Dim J  As Long
+    Dim N1 As Long
+    Dim N2 As Long
     N1 = UBound(UpperArray1D, 1)
     N2 = UBound(LowerArray1D, 1)
     Dim Output
@@ -1324,7 +1393,8 @@ Private Function DrawPolyLine(XYList, TargetSheet As Worksheet) As Shape
 'XYList         ・・・XY座標が入った二次元配列 X方向→右方向 Y方向→下方向
 'TargetSheet    ・・・作図対象のシート
 
-    Dim I%, Count%
+    Dim I     As Integer
+    Dim Count As Integer
     Count = UBound(XYList, 1)
     
     With TargetSheet.Shapes.BuildFreeform(msoEditingCorner, XYList(1, 1), XYList(1, 2))
@@ -1358,13 +1428,16 @@ Private Function GetXYDocumentFromCursor(Optional ImmidiateShow As Boolean = Tru
     Set Win = ActiveWindow
     
     'カーソルのスクリーン座標取得
-    Dim Cursor As PointAPI, CursorScreenX#, CursorScreenY#
+    Dim Cursor        As PointAPI
+    Dim CursorScreenX As Double
+    Dim CursorScreenY As Double
     Call GetCursorPos(Cursor)
     CursorScreenX = Cursor.X
     CursorScreenY = Cursor.Y
     
     'カーソルが乗っているセルを取得
-    Dim CursorCell As Range, Dummy
+    Dim CursorCell As Range
+    Dim Dummy
     Set Dummy = Win.RangeFromPoint(CursorScreenX, CursorScreenY)
     If TypeName(Dummy) = "Range" Then
         Set CursorCell = Dummy
@@ -1374,7 +1447,10 @@ Private Function GetXYDocumentFromCursor(Optional ImmidiateShow As Boolean = Tru
     End If
     
     '四隅のスクリーン座標を取得
-    Dim X1Screen#, X2Screen#, Y1Screen#, Y2Screen# '四隅のスクリーン座標
+    Dim X1Screen As Double
+    Dim X2Screen As Double
+    Dim Y1Screen As Double
+    Dim Y2Screen As Double '四隅のスクリーン座標
     Dummy = GetXYCellScreenUpperLeft(CursorCell)
     If IsEmpty(Dummy) Then Exit Function
     X1Screen = Dummy(1)
@@ -1386,19 +1462,23 @@ Private Function GetXYDocumentFromCursor(Optional ImmidiateShow As Boolean = Tru
     Y2Screen = Dummy(2)
     
     '四隅のドキュメント座標取得
-    Dim X1Document#, X2Document#, Y1Document#, Y2Document# '四隅のドキュメント座標
+    Dim X1Document As Double
+    Dim X2Document As Double
+    Dim Y1Document As Double
+    Dim Y2Document As Double '四隅のドキュメント座標
     X1Document = CursorCell.Left
     X2Document = CursorCell.Left + CursorCell.Width
     Y1Document = CursorCell.Top
     Y2Document = CursorCell.Top + CursorCell.Height
     
     'マウスカーソルのドキュメント座標を補間で計算
-    Dim CursorDocumentX#, CursorDocumentY#
+    Dim CursorDocumentX As Double
+    Dim CursorDocumentY As Double
     CursorDocumentX = X1Document + (X2Document - X1Document) * (CursorScreenX - X1Screen) / (X2Screen - X1Screen)
     CursorDocumentY = Y1Document + (Y2Document - Y1Document) * (CursorScreenY - Y1Screen) / (Y2Screen - Y1Screen)
         
     '出力
-    Dim Output#(1 To 2)
+    Dim Output(1 To 2)
     Output(1) = CursorDocumentX
     Output(2) = CursorDocumentY
     
@@ -1434,7 +1514,7 @@ Private Function GetXYCellScreenUpperLeft(TargetCell As Range)
        
     '【PointsToScreenPixelsの注意事項】
     '【注】対象セルがシート上で表示されていないと取得不可。一部でも表示されていたら取得可能。
-    Dim Output#(1 To 2)
+    Dim Output(1 To 2)
     Output(1) = Pane.PointsToScreenPixelsX(TargetCell.Left)
     Output(2) = Pane.PointsToScreenPixelsY(TargetCell.Top)
     
@@ -1459,7 +1539,7 @@ Private Function GetPaneOfCell(TargetCell As Range) As Pane
     Set Win = ActiveWindow
     
     Dim Output As Pane
-    Dim I& '数え上げ用(Long型)
+    Dim I As Long '数え上げ用(Long型)
     
     ' ウィンドウ分割無しか
     If Not Win.FreezePanes And Not Win.Split Then
@@ -1514,10 +1594,14 @@ Private Function GetXYCellScreenLowerRight(TargetCell As Range)
     
     '【PointsToScreenPixelsの注意事項】
     '【注】対象セルがシート上で表示されていないと取得不可。一部でも表示されていたら取得可能。
-    Dim Output#(1 To 2)
+    Dim Output(1 To 2)
     Output(1) = Pane.PointsToScreenPixelsX(TargetCell.Left + TargetCell.Width)
     Output(2) = Pane.PointsToScreenPixelsY(TargetCell.Top + TargetCell.Height)
     
     GetXYCellScreenLowerRight = Output
     
 End Function
+
+
+
+
